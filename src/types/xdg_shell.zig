@@ -222,7 +222,7 @@ pub const XdgToplevel = extern struct {
 };
 
 pub const XdgSurface = extern struct {
-    pub const Role = extern enum {
+    pub const Role = enum(c_int) {
         none,
         toplevel,
         popup,

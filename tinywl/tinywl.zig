@@ -342,6 +342,7 @@ const Server = struct {
     }
 
     fn cursorFrame(listener: *wl.Listener(*wlr.Cursor), wlr_cursor: *wlr.Cursor) void {
+        _ = wlr_cursor;
         const server = @fieldParentPtr(Server, "cursor_frame", listener);
         server.seat.pointerNotifyFrame();
     }
@@ -349,11 +350,11 @@ const Server = struct {
     /// Assumes the modifier used for compositor keybinds is pressed
     /// Returns true if the key was handled
     fn handleKeybind(server: *Server, key: xkb.Keysym) bool {
-        switch (key) {
+        switch (@enumToInt(key)) {
             // Exit the compositor
-            .Escape => server.wl_server.terminate(),
+            xkb.Keysym.Escape => server.wl_server.terminate(),
             // Focus the next view in the stack, pushing the current top to the back
-            .F1 => {
+            xkb.Keysym.F1 => {
                 if (server.views.length() < 2) return true;
                 const view = @fieldParentPtr(View, "link", server.views.link.prev.?);
                 server.focusView(view, view.xdg_surface.surface);
@@ -382,7 +383,7 @@ const Output = struct {
         const server = output.server;
 
         var now: os.timespec = undefined;
-        os.clock_gettime(os.CLOCK_MONOTONIC, &now) catch @panic("CLOCK_MONOTONIC not supported");
+        os.clock_gettime(os.CLOCK.MONOTONIC, &now) catch @panic("CLOCK_MONOTONIC not supported");
 
         wlr_output.attachRender(null) catch return;
 
@@ -461,11 +462,13 @@ const View = struct {
     }
 
     fn unmap(listener: *wl.Listener(*wlr.XdgSurface), xdg_surface: *wlr.XdgSurface) void {
+        _ = xdg_surface;
         const view = @fieldParentPtr(View, "unmap", listener);
         view.link.remove();
     }
 
     fn destroy(listener: *wl.Listener(*wlr.XdgSurface), xdg_surface: *wlr.XdgSurface) void {
+        _ = xdg_surface;
         const view = @fieldParentPtr(View, "destroy", listener);
 
         view.map.link.remove();
@@ -481,6 +484,7 @@ const View = struct {
         listener: *wl.Listener(*wlr.XdgToplevel.event.Move),
         event: *wlr.XdgToplevel.event.Move,
     ) void {
+        _ = event;
         const view = @fieldParentPtr(View, "request_move", listener);
         const server = view.server;
         server.grabbed_view = view;

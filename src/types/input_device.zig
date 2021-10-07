@@ -4,7 +4,7 @@ const wayland = @import("wayland");
 const wl = wayland.server.wl;
 
 pub const InputDevice = extern struct {
-    pub const Type = extern enum {
+    pub const Type = enum(c_int) {
         keyboard,
         pointer,
         touch,

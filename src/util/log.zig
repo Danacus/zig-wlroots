@@ -1,4 +1,4 @@
-pub const Importance = extern enum {
+pub const Importance = enum(c_int) {
     silent = 0,
     err = 1,
     info = 2,

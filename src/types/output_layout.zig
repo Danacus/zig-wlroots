@@ -19,7 +19,7 @@ pub const OutputLayout = extern struct {
         },
     };
 
-    pub const Direction = extern enum {
+    pub const Direction = enum(c_int) {
         up = 1,
         down = 2,
         left = 4,
