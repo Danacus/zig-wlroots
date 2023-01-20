@@ -1,6 +1,5 @@
 const wl = @import("wayland").server.wl;
 const wlr = @import("../wlroots.zig");
-const pixman = @import("pixman");
 
 pub const Box = extern struct {
     x: c_int,
@@ -23,11 +22,8 @@ pub const Box = extern struct {
     extern fn wlr_box_transform(dest: *Box, box: *const Box, transform: wl.Output.Transform, width: c_int, height: c_int) void;
     pub const transform = wlr_box_transform;
 
-    extern fn wlr_box_rotated_bounds(dest: *Box, box: *const Box, rotation: f32) void;
-    pub const rotatedBounds = wlr_box_rotated_bounds;
-
-    extern fn wlr_box_from_pixman_box32(dest: *Box, box: pixman.Box32) void;
-    pub const fromPixmanBox32 = wlr_box_from_pixman_box32;
+    extern fn wlr_box_equal(a: *const Box, b: *const Box) bool;
+    pub const equal = wlr_box_equal;
 };
 
 pub const FBox = extern struct {
@@ -35,4 +31,13 @@ pub const FBox = extern struct {
     y: f64,
     width: f64,
     height: f64,
+
+    extern fn wlr_fbox_empty(box: *const FBox) bool;
+    pub const empty = wlr_fbox_empty;
+
+    extern fn wlr_fbox_transform(dest: *FBox, box: *const FBox, transform: wl.Output.Transform, width: f64, height: f64) void;
+    pub const transform = wlr_fbox_transform;
+
+    extern fn wlr_fbox_equal(a: *const FBox, b: *const FBox) bool;
+    pub const equal = wlr_fbox_equal;
 };

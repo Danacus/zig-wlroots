@@ -3,14 +3,14 @@ const wlr = @import("../wlroots.zig");
 const wayland = @import("wayland");
 const wl = wayland.server.wl;
 
-pub const AxisSource = extern enum {
+pub const AxisSource = enum(c_int) {
     wheel,
     finger,
     continuous,
     wheel_tilt,
 };
 
-pub const AxisOrientation = extern enum {
+pub const AxisOrientation = enum(c_int) {
     vertical,
     horizontal,
 };
@@ -90,11 +90,27 @@ pub const Pointer = extern struct {
             time_msec: u32,
             cancelled: bool,
         };
+
+        pub const HoldBegin = extern struct {
+            device: *wlr.InputDevice,
+            time_msec: u32,
+            fingers: u32,
+        };
+
+        pub const HoldEnd = extern struct {
+            device: *wlr.InputDevice,
+            time_msec: u32,
+            cancelled: bool,
+        };
     };
 
     const Impl = opaque {};
 
+    base: wlr.InputDevice,
+
     impl: *const Impl,
+
+    output_name: [*:0]u8,
 
     events: extern struct {
         motion: wl.Signal(*event.Motion),
@@ -102,11 +118,16 @@ pub const Pointer = extern struct {
         button: wl.Signal(*event.Button),
         axis: wl.Signal(*event.Axis),
         frame: wl.Signal(*Pointer),
+
         swipe_begin: wl.Signal(*event.SwipeBegin),
         swipe_update: wl.Signal(*event.SwipeUpdate),
         swipe_end: wl.Signal(*event.SwipeEnd),
+
         pinch_begin: wl.Signal(*event.PinchBegin),
         pinch_update: wl.Signal(*event.PinchUpdate),
         pinch_end: wl.Signal(*event.PinchEnd),
-    }
+
+        hold_begin: wl.Signal(*event.HoldBegin),
+        hold_end: wl.Signal(*event.HoldEnd),
+    },
 };

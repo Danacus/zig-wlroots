@@ -56,6 +56,13 @@ pub const Seat = extern struct {
         },
 
         serials: SerialRingset,
+        needs_touch_frame: bool,
+
+        value120: extern struct {
+            acc_discrete: [2]i32,
+            last_discrete: [2]i32,
+            acc_axis: [2]f64,
+        },
 
         extern fn wlr_seat_client_next_serial(client: *Client) u32;
         pub const nextSerial = wlr_seat_client_next_serial;
@@ -72,21 +79,21 @@ pub const Seat = extern struct {
 
     pub const PointerGrab = extern struct {
         pub const Interface = extern struct {
-            enter: fn (
+            enter: *const fn (
                 grab: *PointerGrab,
                 surface: *wlr.Surface,
                 sx: f64,
                 sy: f64,
             ) callconv(.C) void,
-            clear_focus: fn (grab: *PointerGrab) callconv(.C) void,
-            motion: fn (grab: *PointerGrab, time_msec: u32, sx: f64, sy: f64) callconv(.C) void,
-            button: fn (
+            clear_focus: *const fn (grab: *PointerGrab) callconv(.C) void,
+            motion: *const fn (grab: *PointerGrab, time_msec: u32, sx: f64, sy: f64) callconv(.C) void,
+            button: *const fn (
                 grab: *PointerGrab,
                 time_msec: u32,
                 button: u32,
                 state: wl.Pointer.ButtonState,
             ) callconv(.C) u32,
-            axis: fn (
+            axis: *const fn (
                 grab: *PointerGrab,
                 time_msec: u32,
                 orientation: wlr.AxisOrientation,
@@ -94,8 +101,8 @@ pub const Seat = extern struct {
                 value_discrete: i32,
                 source: wlr.AxisSource,
             ) callconv(.C) void,
-            frame: ?fn (grab: *PointerGrab) callconv(.C) void,
-            cancel: ?fn (grab: *PointerGrab) callconv(.C) void,
+            frame: ?*const fn (grab: *PointerGrab) callconv(.C) void,
+            cancel: ?*const fn (grab: *PointerGrab) callconv(.C) void,
         };
 
         interface: *const Interface,
@@ -105,17 +112,17 @@ pub const Seat = extern struct {
 
     pub const KeyboardGrab = extern struct {
         pub const Interface = extern struct {
-            enter: fn (
+            enter: *const fn (
                 grab: *KeyboardGrab,
                 surface: *wlr.Surface,
                 keycodes: ?[*]u32,
                 num_keycodes: usize,
                 modifiers: ?*wlr.Keyboard.Modifiers,
             ) callconv(.C) void,
-            clear_focus: fn (grab: *KeyboardGrab) callconv(.C) void,
-            key: fn (grab: *KeyboardGrab, time_msec: u32, key: u32, state: u32) callconv(.C) void,
-            modifiers: fn (grab: *KeyboardGrab, modifiers: ?*wlr.Keyboard.Modifiers) callconv(.C) void,
-            cancel: ?fn (grab: *KeyboardGrab) callconv(.C) void,
+            clear_focus: *const fn (grab: *KeyboardGrab) callconv(.C) void,
+            key: *const fn (grab: *KeyboardGrab, time_msec: u32, key: u32, state: u32) callconv(.C) void,
+            modifiers: *const fn (grab: *KeyboardGrab, modifiers: ?*wlr.Keyboard.Modifiers) callconv(.C) void,
+            cancel: ?*const fn (grab: *KeyboardGrab) callconv(.C) void,
         };
 
         interface: *const Interface,
@@ -125,11 +132,13 @@ pub const Seat = extern struct {
 
     pub const TouchGrab = extern struct {
         pub const Interface = extern struct {
-            down: fn (grab: *TouchGrab, time_msec: u32, point: *TouchPoint) callconv(.C) u32,
-            up: fn (grab: *TouchGrab, time_msec: u32, point: *TouchPoint) callconv(.C) void,
-            motion: fn (grab: *TouchGrab, time_msec: u32, point: *TouchPoint) callconv(.C) void,
-            enter: fn (grab: *TouchGrab, time_msec: u32, point: *TouchPoint) callconv(.C) void,
-            cancel: ?fn (grab: *TouchGrab) callconv(.C) void,
+            down: *const fn (grab: *TouchGrab, time_msec: u32, point: *TouchPoint) callconv(.C) u32,
+            up: *const fn (grab: *TouchGrab, time_msec: u32, point: *TouchPoint) callconv(.C) void,
+            motion: *const fn (grab: *TouchGrab, time_msec: u32, point: *TouchPoint) callconv(.C) void,
+            enter: *const fn (grab: *TouchGrab, time_msec: u32, point: *TouchPoint) callconv(.C) void,
+            frame: ?*const fn (grab: *TouchGrab) callconv(.C) void,
+            cancel: ?*const fn (grab: *TouchGrab) callconv(.C) void,
+            wl_cancel: ?*const fn (grab: *TouchGrab, surface: *wlr.Surface) callconv(.C) void,
         };
 
         interface: *const Interface,
@@ -146,6 +155,9 @@ pub const Seat = extern struct {
 
         grab: *PointerGrab,
         default_grab: *PointerGrab,
+
+        sent_axis_source: bool,
+        cached_axis_source: wlr.AxisSource,
 
         buttons: [16]u32,
         button_count: usize,
@@ -361,7 +373,7 @@ pub const Seat = extern struct {
     extern fn wlr_seat_pointer_has_grab(seat: *Seat) bool;
     pub const pointerHasGrab = wlr_seat_pointer_has_grab;
 
-    extern fn wlr_seat_set_keyboard(seat: *Seat, dev: ?*wlr.InputDevice) void;
+    extern fn wlr_seat_set_keyboard(seat: *Seat, keyboard: ?*wlr.Keyboard) void;
     pub const setKeyboard = wlr_seat_set_keyboard;
 
     extern fn wlr_seat_get_keyboard(seat: *Seat) ?*wlr.Keyboard;
@@ -420,6 +432,12 @@ pub const Seat = extern struct {
     extern fn wlr_seat_touch_send_motion(seat: *Seat, time_msec: u32, touch_id: i32, sx: f64, sy: f64) void;
     pub const touchSendMotion = wlr_seat_touch_send_motion;
 
+    extern fn wlr_seat_touch_send_frame(seat: *Seat) void;
+    pub const touchSendFrame = wlr_seat_touch_send_frame;
+
+    extern fn wlr_seat_touch_send_cancel(seat: *Seat, surface: *wlr.Surface) void;
+    pub const touchSendCancel = wlr_seat_touch_send_cancel;
+
     extern fn wlr_seat_touch_notify_down(seat: *Seat, surface: *wlr.Surface, time_msec: u32, touch_id: i32, sx: f64, sy: f64) u32;
     pub const touchNotifyDown = wlr_seat_touch_notify_down;
 
@@ -428,6 +446,12 @@ pub const Seat = extern struct {
 
     extern fn wlr_seat_touch_notify_motion(seat: *Seat, time_msec: u32, touch_id: i32, sx: f64, sy: f64) void;
     pub const touchNotifyMotion = wlr_seat_touch_notify_motion;
+
+    extern fn wlr_seat_touch_notify_frame(seat: *Seat) void;
+    pub const touchNotifyFrame = wlr_seat_touch_notify_frame;
+
+    extern fn wlr_seat_touch_notify_cancel(seat: *Seat, surface: *wlr.Surface) void;
+    pub const touchNotifyCancel = wlr_seat_touch_notify_cancel;
 
     extern fn wlr_seat_touch_num_points(seat: *Seat) c_int;
     pub const touchNumPoints = wlr_seat_touch_num_points;
@@ -447,7 +471,7 @@ pub const Seat = extern struct {
     extern fn wlr_seat_validate_pointer_grab_serial(seat: *Seat, origin: ?*wlr.Surface, serial: u32) bool;
     pub const validatePointerGrabSerial = wlr_seat_validate_pointer_grab_serial;
 
-    extern fn wlr_seat_validate_touch_grab_serial(seat: *Seat, origin: ?*wlr.Surface, serial: u32, point_ptr: *?*TouchPoint) bool;
+    extern fn wlr_seat_validate_touch_grab_serial(seat: *Seat, origin: ?*wlr.Surface, serial: u32, point_ptr: ?**wlr.TouchPoint) bool;
     pub const validateTouchGrabSerial = wlr_seat_validate_touch_grab_serial;
 
     extern fn wlr_seat_request_set_selection(seat: *Seat, client: ?*Seat.Client, source: ?*wlr.DataSource, serial: u32) void;

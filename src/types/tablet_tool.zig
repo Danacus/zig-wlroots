@@ -3,7 +3,7 @@ const wlr = @import("../wlroots.zig");
 const wl = @import("wayland").server.wl;
 
 pub const TabletTool = extern struct {
-    pub const Type = extern enum {
+    pub const Type = enum(c_int) {
         pen = 1,
         eraser,
         brush,
@@ -13,8 +13,7 @@ pub const TabletTool = extern struct {
         lens,
         totem,
     };
-
-    pub const Axis = extern enum {
+    pub const Axis = enum(c_int) {
         x = 1 << 0,
         y = 1 << 1,
         distance = 1 << 2,
@@ -26,12 +25,12 @@ pub const TabletTool = extern struct {
         wheel = 1 << 8,
     };
 
-    pub const ProximityState = extern enum {
+    pub const ProximityState = enum {
         out,
         in,
     };
 
-    pub const TipState = extern enum {
+    pub const TipState = enum {
         up,
         down,
     };
@@ -61,7 +60,7 @@ pub const Tablet = extern struct {
             tool: *TabletTool,
 
             time_msec: u32,
-            updated_axes: u32,
+            updated_axes: wlr.TabletTool.Axis,
             /// From 0..1
             x: f64,
             /// From 0..1
@@ -80,7 +79,7 @@ pub const Tablet = extern struct {
         };
 
         pub const Proximity = extern struct {
-            pub const State = extern enum {
+            pub const State = enum(c_int) {
                 out,
                 in,
             };
@@ -95,9 +94,9 @@ pub const Tablet = extern struct {
         };
 
         pub const Tip = extern struct {
-            pub const State = extern enum {
-                up,
-                down,
+            pub const State = enum(c_int) {
+                up = 1 << 0,
+                down = 1 << 1,
             };
 
             device: *wlr.InputDevice,
@@ -122,7 +121,12 @@ pub const Tablet = extern struct {
 
     const Impl = opaque {};
 
+    base: wlr.InputDevice,
+
     impl: *const Impl,
+
+    width_mm: f64,
+    height_mm: f64,
 
     events: extern struct {
         axis: wl.Signal(*event.Axis),
@@ -131,8 +135,7 @@ pub const Tablet = extern struct {
         button: wl.Signal(*event.Button),
     },
 
-    name: [*:0]u8,
-    paths: wlr.List,
+    paths: wl.Array,
 
     data: usize,
 };

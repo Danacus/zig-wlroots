@@ -11,14 +11,33 @@ pub fn build(b: *Builder) void {
     const scanner = ScanProtocolsStep.create(b);
     scanner.addSystemProtocol("stable/xdg-shell/xdg-shell.xml");
 
-    const wayland = scanner.getPkg();
-    const xkbcommon = Pkg{ .name = "xkbcommon", .path = "deps/zig-xkbcommon/src/xkbcommon.zig" };
-    const pixman = Pkg{ .name = "pixman", .path = "deps/zig-pixman/pixman.zig" };
+    const wayland = Pkg{
+        .name = "wayland",
+        .source = .{ .generated = &scanner.result },
+    };
+    const xkbcommon = Pkg{
+        .name = "xkbcommon",
+        .source = .{ .path = "deps/zig-xkbcommon/src/xkbcommon.zig" },
+    };
+    const pixman = Pkg{
+        .name = "pixman",
+        .source = .{ .path = "deps/zig-pixman/pixman.zig" },
+    };
     const wlroots = Pkg{
         .name = "wlroots",
-        .path = "../src/wlroots.zig",
+        .source = .{ .path = "../src/wlroots.zig" },
         .dependencies = &[_]Pkg{ wayland, xkbcommon, pixman },
     };
+
+    // These must be manually kept in sync with the versions wlroots supports
+    // until wlroots gives the option to request a specific version.
+    scanner.generate("wl_compositor", 4);
+    scanner.generate("wl_subcompositor", 1);
+    scanner.generate("wl_shm", 1);
+    scanner.generate("wl_output", 4);
+    scanner.generate("wl_seat", 7);
+    scanner.generate("wl_data_device_manager", 3);
+    scanner.generate("xdg_wm_base", 2);
 
     const exe = b.addExecutable("tinywl", "tinywl.zig");
     exe.setTarget(target);
@@ -43,6 +62,9 @@ pub fn build(b: *Builder) void {
 
     const run_cmd = exe.run();
     run_cmd.step.dependOn(b.getInstallStep());
+    if (b.args) |args| {
+        run_cmd.addArgs(args);
+    }
 
     const run_step = b.step("run", "Run the compositor");
     run_step.dependOn(&run_cmd.step);

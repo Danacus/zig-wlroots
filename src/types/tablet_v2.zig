@@ -23,19 +23,19 @@ pub const TabletSeatV2 = extern struct {
 
     pub const PadGrab = extern struct {
         pub const Interface = extern struct {
-            enter: fn (
+            enter: *const fn (
                 grab: *PadGrab,
                 tablet: *TabletV2,
                 surface: *wlr.Surface,
             ) callconv(.C) void,
 
-            button: fn (
+            button: *const fn (
                 grab: *PadGrab,
                 button: u32,
                 state: wl.Pointer.ButtonState, // enum zwp_tablet_pad_v2_button_state
             ) callconv(.C) void,
 
-            strip: fn (
+            strip: *const fn (
                 grab: *PadGrab,
                 strip: u32,
                 position: f64,
@@ -43,7 +43,7 @@ pub const TabletSeatV2 = extern struct {
                 time: u32,
             ) callconv(.C) void,
 
-            ring: fn (
+            ring: *const fn (
                 grab: *PadGrab,
                 ring: u32,
                 position: f64,
@@ -51,19 +51,19 @@ pub const TabletSeatV2 = extern struct {
                 time: u32,
             ) callconv(.C) void,
 
-            leave: fn (
+            leave: *const fn (
                 grab: *PadGrab,
                 surface: *wlr.Surface,
             ) callconv(.C) void,
 
-            mode: fn (
+            mode: *const fn (
                 grab: *PadGrab,
                 group: usize,
                 mode: u32,
                 time: u32,
             ) callconv(.C) void,
 
-            cancel: fn (
+            cancel: *const fn (
                 grab: *PadGrab,
             ) callconv(.C) void,
         };
@@ -75,69 +75,69 @@ pub const TabletSeatV2 = extern struct {
 
     pub const ToolGrab = extern struct {
         pub const Interface = extern struct {
-            proximity_in: fn (
+            proximity_in: *const fn (
                 grab: *ToolGrab,
                 tablet: *TabletV2,
                 surface: *wlr.Surface,
             ) callconv(.C) void,
 
-            down: fn (
+            down: *const fn (
                 grab: *ToolGrab,
             ) callconv(.C) void,
 
-            up: fn (
+            up: *const fn (
                 grab: *ToolGrab,
             ) callconv(.C) void,
 
-            motion: fn (
+            motion: *const fn (
                 grab: *ToolGrab,
                 x: f64,
                 y: f64,
             ) callconv(.C) void,
 
-            pressure: fn (
+            pressure: *const fn (
                 grab: *ToolGrab,
                 pressure: f64,
             ) callconv(.C) void,
 
-            distance: fn (
+            distance: *const fn (
                 grab: *ToolGrab,
                 distance: f64,
             ) callconv(.C) void,
 
-            tilt: fn (
+            tilt: *const fn (
                 grab: *ToolGrab,
                 x: f64,
                 y: f64,
             ) callconv(.C) void,
 
-            rotation: fn (
+            rotation: *const fn (
                 grab: *ToolGrab,
                 degrees: f64,
             ) callconv(.C) void,
 
-            slider: fn (
+            slider: *const fn (
                 grab: *ToolGrab,
                 postion: f64,
             ) callconv(.C) void,
 
-            wheel: fn (
+            wheel: *const fn (
                 grab: *ToolGrab,
                 degrees: f64,
                 clicks: u32,
             ) callconv(.C) void,
 
-            proximity_out: fn (
+            proximity_out: *const fn (
                 grab: *ToolGrab,
             ) callconv(.C) void,
 
-            button: fn (
+            button: *const fn (
                 grab: *ToolGrab,
                 button: u32,
                 state: wl.Pointer.ButtonState, // enum zwp_tablet_tool_v2_button_state
             ) callconv(.C) void,
 
-            cancel: fn (
+            cancel: *const fn (
                 grab: *ToolGrab,
             ) callconv(.C) void,
         };
@@ -183,7 +183,7 @@ pub const TabletManagerV2 = extern struct {
 
     extern fn wlr_tablet_v2_create(server: *wl.Server) ?*TabletManagerV2;
     pub fn create(server: *wl.Server) !*TabletManagerV2 {
-        return wlr_tablet_v2_create(display) orelse error.OutOfMemory;
+        return wlr_tablet_v2_create(server) orelse error.OutOfMemory;
     }
 };
 

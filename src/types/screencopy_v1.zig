@@ -31,23 +31,20 @@ pub const ScreencopyFrameV1 = extern struct {
     /// ScreencopyManagerV1.frames
     link: wl.list.Link,
 
-    format: wl.Shm.Format,
-    fourcc: u32,
+    shm_format: u32,
+    dmabuf_format: u32,
     box: wlr.Box,
-    stride: c_int,
+    shm_stride: c_int,
 
     overlay_cursor: bool,
     cursor_locked: bool,
 
     with_damage: bool,
 
-    shm_buffer: ?*wl.shm.Buffer,
-    dma_buffer: ?*wlr.DmabufBufferV1,
-
-    buffer_destroy: wl.Listener(*wl.Resource),
+    buffer_cap: wlr.BufferCap,
+    buffer: *wlr.Buffer,
 
     output: *wlr.Output,
-    output_precommit: wl.Listener(*wlr.Output.event.Precommit),
     output_commit: wl.Listener(*wlr.Output.event.Commit),
     output_destroy: wl.Listener(*wlr.Output),
     output_enable: wl.Listener(*wlr.Output),

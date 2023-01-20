@@ -22,11 +22,14 @@ pub const Cursor = extern struct {
         pinch_begin: wl.Signal(*wlr.Pointer.event.PinchBegin),
         pinch_update: wl.Signal(*wlr.Pointer.event.PinchUpdate),
         pinch_end: wl.Signal(*wlr.Pointer.event.PinchEnd),
+        hold_begin: wl.Signal(*wlr.Pointer.event.HoldBegin),
+        hold_end: wl.Signal(*wlr.Pointer.event.HoldEnd),
 
         touch_up: wl.Signal(*wlr.Touch.event.Up),
         touch_down: wl.Signal(*wlr.Touch.event.Down),
         touch_motion: wl.Signal(*wlr.Touch.event.Motion),
         touch_cancel: wl.Signal(*wlr.Touch.event.Cancel),
+        touch_frame: wl.Signal(void),
 
         tablet_tool_axis: wl.Signal(*wlr.Tablet.event.Axis),
         tablet_tool_proximity: wl.Signal(*wlr.Tablet.event.Proximity),
@@ -80,9 +83,9 @@ pub const Cursor = extern struct {
     extern fn wlr_cursor_map_input_to_output(cur: *Cursor, dev: *wlr.InputDevice, output: *wlr.Output) void;
     pub const mapInputToOutput = wlr_cursor_map_input_to_output;
 
-    extern fn wlr_cursor_map_to_region(cur: *Cursor, box: *wlr.Box) void;
+    extern fn wlr_cursor_map_to_region(cur: *Cursor, box: *const wlr.Box) void;
     pub const mapToRegion = wlr_cursor_map_to_region;
 
-    extern fn wlr_cursor_map_input_to_region(cur: *Cursor, dev: *wlr.InputDevice, box: *wlr.Box) void;
+    extern fn wlr_cursor_map_input_to_region(cur: *Cursor, dev: *wlr.InputDevice, box: *const wlr.Box) void;
     pub const mapInputToRegion = wlr_cursor_map_input_to_region;
 };
