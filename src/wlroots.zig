@@ -6,25 +6,27 @@ pub const Session = @import("backend/session.zig").Session;
 pub const DmabufAttributes = @import("render/dmabuf.zig").DmabufAttributes;
 pub const Renderer = @import("render/renderer.zig").Renderer;
 pub const Texture = @import("render/texture.zig").Texture;
-pub const Allocator = opaque {};
+pub const Allocator = @import("render/allocator.zig").Allocator;
 pub const Swapchain = opaque {};
+pub const DrmFormat = @import("render/drm_format_set.zig").DrmFormat;
+pub const DrmFormatSet = @import("render/drm_format_set.zig").DrmFormatSet;
 
 pub const ShmAttributes = @import("types/buffer.zig").ShmAttributes;
+pub const BufferCap = @import("types/buffer.zig").BufferCap;
 pub const Buffer = @import("types/buffer.zig").Buffer;
 pub const ClientBuffer = @import("types/buffer.zig").ClientBuffer;
 
+pub const SinglePixelBufferManagerV1 = @import("types/single_pixel_buffer_v1.zig").SinglePixelBufferManagerV1;
+
 pub const DmabufBufferV1 = @import("types/linux_dmabuf_v1.zig").DmabufBufferV1;
 pub const LinuxDmabufV1 = @import("types/linux_dmabuf_v1.zig").LinuxDmabufV1;
-pub const LinuxDmabufParamsV1 = @import("types/linux_dmabuf_v1.zig").LinuxDmabufParamsV1;
 
 pub const Compositor = @import("types/compositor.zig").Compositor;
-pub const Subcompositor = @import("types/compositor.zig").Subcompositor;
-
-pub const Surface = @import("types/surface.zig").Surface;
-pub const Subsurface = @import("types/surface.zig").Subsurface;
+pub const Surface = @import("types/compositor.zig").Surface;
+pub const Subcompositor = @import("types/subcompositor.zig").Subcompositor;
+pub const Subsurface = @import("types/subcompositor.zig").Subsurface;
 
 pub const Viewporter = @import("types/viewporter.zig").Viewporter;
-pub const Viewport = @import("types/viewporter.zig").Viewport;
 
 pub const Presentation = @import("types/presentation_time.zig").Presentation;
 pub const PresentationFeedback = @import("types/presentation_time.zig").PresentationFeedback;
@@ -47,6 +49,10 @@ pub const XdgActivationTokenV1 = @import("types/xdg_activation_v1.zig").XdgActiv
 pub const LayerShellV1 = @import("types/layer_shell_v1.zig").LayerShellV1;
 pub const LayerSurfaceV1 = @import("types/layer_shell_v1.zig").LayerSurfaceV1;
 
+pub const SessionLockManagerV1 = @import("types/session_lock_v1.zig").SessionLockManagerV1;
+pub const SessionLockV1 = @import("types/session_lock_v1.zig").SessionLockV1;
+pub const SessionLockSurfaceV1 = @import("types/session_lock_v1.zig").SessionLockSurfaceV1;
+
 pub const Seat = @import("types/seat.zig").Seat;
 pub const SerialRange = @import("types/seat.zig").SerialRange;
 pub const SerialRingset = @import("types/seat.zig").SerialRingset;
@@ -55,6 +61,7 @@ pub const TouchPoint = @import("types/seat.zig").TouchPoint;
 pub const InputDevice = @import("types/input_device.zig").InputDevice;
 pub const InputMethodV2 = @import("types/input_method_v2.zig").InputMethodV2;
 pub const InputMethodManagerV2 = @import("types/input_method_v2.zig").InputMethodManagerV2;
+pub const InputPopupSurfaceV2 = @import("types/input_method_v2.zig").InputPopupSurfaceV2;
 
 pub const TextInputV3 = @import("types/text_input_v3.zig").TextInputV3;
 pub const TextInputManagerV3 = @import("types/text_input_v3.zig").TextInputManagerV3;
@@ -87,6 +94,8 @@ pub const TabletToolV2 = @import("types/tablet_v2.zig").TabletToolV2;
 pub const TabletPadV2 = @import("types/tablet_v2.zig").TabletPadV2;
 pub const TabletManagerV2 = @import("types/tablet_v2.zig").TabletManagerV2;
 
+pub const Switch = @import("types/switch.zig").Switch;
+
 pub const VirtualPointerManagerV1 = @import("types/virtual_pointer_v1.zig").VirtualPointerManagerV1;
 pub const VirtualPointerV1 = @import("types/virtual_pointer_v1.zig").VirtualPointerV1;
 
@@ -98,6 +107,8 @@ pub const IdleTimeout = @import("types/idle.zig").IdleTimeout;
 
 pub const IdleInhibitManagerV1 = @import("types/idle_inhibit_v1.zig").IdleInhibitManagerV1;
 pub const IdleInhibitorV1 = @import("types/idle_inhibit_v1.zig").IdleInhibitorV1;
+
+pub const IdleNotifierV1 = @import("types/idle_notify_v1.zig").IdleNotifierV1;
 
 pub const InputInhibitManager = @import("types/input_inhibitor.zig").InputInhibitManager;
 
@@ -118,6 +129,8 @@ pub const Output = @import("types/output.zig").Output;
 pub const OutputCursor = @import("types/output.zig").OutputCursor;
 pub const OutputDamage = @import("types/output_damage.zig").OutputDamage;
 pub const OutputLayout = @import("types/output_layout.zig").OutputLayout;
+
+pub const DamageRing = @import("types/damage_ring.zig").DamageRing;
 
 pub const XdgOutputManagerV1 = @import("types/xdg_output_v1.zig").XdgOutputManagerV1;
 pub const XdgOutputV1 = @import("types/xdg_output_v1.zig").XdgOutputV1;
@@ -142,17 +155,20 @@ pub const XcursorTheme = @import("xcursor.zig").XcursorTheme;
 pub const XcursorManager = @import("types/xcursor_manager.zig").XcursorManager;
 pub const XcursorManagerTheme = @import("types/xcursor_manager.zig").XcursorManagerTheme;
 
-pub const Xwayland = @import("xwayland.zig").Xwayland;
-pub const XwaylandServer = @import("xwayland.zig").XwaylandServer;
-pub const XwaylandSurface = @import("xwayland.zig").XwaylandSurface;
-pub const XwaylandCursor = @import("xwayland.zig").XwaylandCursor;
-pub const Xwm = @import("xwayland.zig").Xwm;
+pub usingnamespace if (config.has_xwayland) struct {
+    pub const XwaylandServer = @import("xwayland/server.zig").XwaylandServer;
+    pub const Xwayland = @import("xwayland/xwayland.zig").Xwayland;
+    pub const XwaylandSurface = @import("xwayland/xwayland.zig").XwaylandSurface;
+    pub const XwaylandCursor = @import("xwayland/xwayland.zig").XwaylandCursor;
+    pub const Xwm = @import("xwayland/xwayland.zig").Xwm;
+} else struct {};
 
-pub const List = @import("types/list.zig").List;
-pub const Box = @import("types/box.zig").Box;
-pub const FBox = @import("types/box.zig").FBox;
 pub const matrix = @import("types/matrix.zig");
 
+pub const AddonSet = @import("util/addon.zig").AddonSet;
+pub const Addon = @import("util/addon.zig").Addon;
+pub const Box = @import("util/box.zig").Box;
+pub const FBox = @import("util/box.zig").FBox;
 pub const Edges = @import("util/edges.zig").Edges;
 pub const log = @import("util/log.zig");
 pub const region = @import("util/region.zig");
@@ -164,29 +180,24 @@ pub const OutputConfigurationV1 = @import("types/output_management_v1.zig").Outp
 pub const ForeignToplevelManagerV1 = @import("types/foreign_toplevel_management_v1.zig").ForeignToplevelManagerV1;
 pub const ForeignToplevelHandleV1 = @import("types/foreign_toplevel_management_v1.zig").ForeignToplevelHandleV1;
 
+pub const SceneNode = @import("types/scene.zig").SceneNode;
+pub const Scene = @import("types/scene.zig").Scene;
+pub const SceneTree = @import("types/scene.zig").SceneTree;
+pub const SceneSurface = @import("types/scene.zig").SceneSurface;
+pub const SceneRect = @import("types/scene.zig").SceneRect;
+pub const SceneBuffer = @import("types/scene.zig").SceneBuffer;
+pub const SceneOutput = @import("types/scene.zig").SceneOutput;
+
 pub const config = @import("config.zig");
 pub const version = @import("version.zig");
 
 comptime {
-    if (version.major != 0 or version.minor != 14) {
-        @compileError("zig-wlroots requires wlroots version 0.14");
+    if (version.major != 0 or version.minor != 16) {
+        @compileError("zig-wlroots requires wlroots version 0.16");
     }
 }
-
-fn refAllDeclsRecursive(comptime T: type) void {
-    comptime {
-        for (@import("std").meta.declarations(T)) |decl| {
-            if (decl.is_pub) {
-                switch (decl.data) {
-                    .Type => |T2| refAllDeclsRecursive(T2),
-                    else => _ = decl,
-                }
-            }
-        }
-    }
-}
-
 test {
+    const std = @import("std");
     @setEvalBranchQuota(100000);
-    refAllDeclsRecursive(@This());
+    std.testing.refAllDeclsRecursive(@This());
 }

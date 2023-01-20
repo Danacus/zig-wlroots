@@ -13,7 +13,7 @@ pub const TabletPad = extern struct {
         };
 
         pub const Ring = extern struct {
-            pub const Source = extern enum {
+            pub const Source = enum(c_int) {
                 unknown = 1,
                 finger,
             };
@@ -26,7 +26,7 @@ pub const TabletPad = extern struct {
         };
 
         pub const Strip = extern struct {
-            pub const Source = extern enum {
+            pub const Source = enum(c_int) {
                 unknown = 1,
                 finger,
             };

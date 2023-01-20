@@ -24,27 +24,42 @@ pub const LayerShellV1 = extern struct {
 
 pub const LayerSurfaceV1 = extern struct {
     pub const State = extern struct {
+        pub const Fields = packed struct(u32) {
+            desired_size: bool = false,
+            anchor: bool = false,
+            exclusive_zone: bool = false,
+            margin: bool = false,
+            keyboard_interactivity: bool = false,
+            layer: bool = false,
+            _: u26 = 0,
+        };
+
+        committed: Fields,
         anchor: zwlr.LayerSurfaceV1.Anchor,
         exclusive_zone: i32,
         margin: extern struct {
-            top: u32,
-            right: u32,
-            bottom: u32,
-            left: u32,
+            top: i32,
+            right: i32,
+            bottom: i32,
+            left: i32,
         },
         keyboard_interactive: zwlr.LayerSurfaceV1.KeyboardInteractivity,
         desired_width: u32,
         desired_height: u32,
+        layer: zwlr.LayerShellV1.Layer,
+
+        configure_serial: u32,
         actual_width: u32,
         actual_height: u32,
-        layer: zwlr.LayerShellV1.Layer,
     };
 
     pub const Configure = extern struct {
         /// LayerSurfaceV1.configure_list
         link: wl.list.Link,
         serial: u32,
-        state: State,
+
+        width: u32,
+        height: u32,
     };
 
     surface: *wlr.Surface,
@@ -59,19 +74,11 @@ pub const LayerSurfaceV1 = extern struct {
     added: bool,
     configured: bool,
     mapped: bool,
-    closed: bool,
 
-    configure_serial: u32,
-    configure_next_serial: u32,
     configure_list: wl.list.Head(LayerSurfaceV1.Configure, "link"),
 
-    acked_configure: ?*Configure,
-
-    client_pending: State,
-    server_pending: State,
     current: State,
-
-    surface_destroy: wl.Listener(*wlr.Surface),
+    pending: State,
 
     events: extern struct {
         destroy: wl.Signal(*LayerSurfaceV1),
@@ -82,47 +89,55 @@ pub const LayerSurfaceV1 = extern struct {
 
     data: usize,
 
-    extern fn wlr_layer_surface_v1_configure(surface: *LayerSurfaceV1, width: u32, height: u32) void;
+    extern fn wlr_layer_surface_v1_configure(surface: *LayerSurfaceV1, width: u32, height: u32) u32;
     pub const configure = wlr_layer_surface_v1_configure;
 
-    extern fn wlr_layer_surface_v1_close(surface: *LayerSurfaceV1) void;
-    pub const close = wlr_layer_surface_v1_close;
+    extern fn wlr_layer_surface_v1_destroy(surface: *LayerSurfaceV1) void;
+    pub const destroy = wlr_layer_surface_v1_destroy;
 
-    extern fn wlr_layer_surface_v1_from_wlr_surface(surface: *wlr.Surface) *LayerSurfaceV1;
+    extern fn wlr_layer_surface_v1_from_wlr_surface(surface: *wlr.Surface) ?*LayerSurfaceV1;
     pub const fromWlrSurface = wlr_layer_surface_v1_from_wlr_surface;
 
     extern fn wlr_layer_surface_v1_for_each_surface(
         surface: *LayerSurfaceV1,
-        iterator: fn (*wlr.Surface, c_int, c_int, ?*c_void) callconv(.C) void,
-        user_data: ?*c_void,
+        iterator: *const fn (*wlr.Surface, c_int, c_int, ?*anyopaque) callconv(.C) void,
+        user_data: ?*anyopaque,
     ) void;
     pub inline fn forEachSurface(
         surface: *LayerSurfaceV1,
         comptime T: type,
-        iterator: fn (surface: *wlr.Surface, sx: c_int, sy: c_int, data: T) callconv(.C) void,
+        comptime iterator: fn (surface: *wlr.Surface, sx: c_int, sy: c_int, data: T) void,
         data: T,
     ) void {
         wlr_layer_surface_v1_for_each_surface(
             surface,
-            @ptrCast(fn (*wlr.Surface, c_int, c_int, ?*c_void) callconv(.C) void, iterator),
+            struct {
+                fn wrapper(s: *wlr.Surface, sx: c_int, sy: c_int, d: ?*anyopaque) callconv(.C) void {
+                    iterator(s, sx, sy, @ptrCast(T, @alignCast(@alignOf(T), d)));
+                }
+            }.wrapper,
             data,
         );
     }
 
     extern fn wlr_layer_surface_v1_for_each_popup_surface(
         surface: *LayerSurfaceV1,
-        iterator: fn (*wlr.Surface, c_int, c_int, ?*c_void) callconv(.C) void,
-        user_data: ?*c_void,
+        iterator: *const fn (*wlr.Surface, c_int, c_int, ?*anyopaque) callconv(.C) void,
+        user_data: ?*anyopaque,
     ) void;
     pub inline fn forEachPopupSurface(
         surface: *LayerSurfaceV1,
         comptime T: type,
-        iterator: fn (surface: *wlr.Surface, sx: c_int, sy: c_int, data: T) callconv(.C) void,
+        comptime iterator: fn (surface: *wlr.Surface, sx: c_int, sy: c_int, data: T) void,
         data: T,
     ) void {
         wlr_layer_surface_v1_for_each_popup_surface(
             surface,
-            @ptrCast(fn (*wlr.Surface, c_int, c_int, ?*c_void) callconv(.C) void, iterator),
+            struct {
+                fn wrapper(s: *wlr.Surface, sx: c_int, sy: c_int, d: ?*anyopaque) callconv(.C) void {
+                    iterator(s, sx, sy, @ptrCast(T, @alignCast(@alignOf(T), d)));
+                }
+            }.wrapper,
             data,
         );
     }
@@ -132,4 +147,7 @@ pub const LayerSurfaceV1 = extern struct {
 
     extern fn wlr_layer_surface_v1_popup_surface_at(surface: *LayerSurfaceV1, sx: f64, sy: f64, sub_x: *f64, sub_y: *f64) ?*wlr.Surface;
     pub const popupSurfaceAt = wlr_layer_surface_v1_popup_surface_at;
+
+    extern fn wlr_layer_surface_v1_from_resource(resource: *wl.Resource) ?*LayerSurfaceV1;
+    pub const fromResource = wlr_layer_surface_v1_from_resource;
 };

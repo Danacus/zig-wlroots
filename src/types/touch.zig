@@ -39,13 +39,20 @@ pub const Touch = extern struct {
 
     const Impl = opaque {};
 
+    base: wlr.InputDevice,
+
     impl: *const Impl,
+
+    output_name: [*:0]u8,
+    width_mm: f64,
+    height_mm: f64,
 
     events: extern struct {
         down: wl.Signal(*event.Down),
         up: wl.Signal(*event.Up),
         motion: wl.Signal(*event.Motion),
         cancel: wl.Signal(*event.Cancel),
+        frame: wl.Signal(void),
     },
 
     data: usize,

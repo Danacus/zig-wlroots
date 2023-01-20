@@ -1,15 +1,15 @@
 # zig-wlroots
 
 Idiomatic [Zig](https://ziglang.org/) bindings for
-[wlroots](https://github.com/swaywm/wlroots).
+[wlroots](https://gitlab.freedesktop.org/wlroots/wlroots).
 
 *Note: these bindings are early in development and should not be considered
 as stable as wlroots*
 
 ## Dependencies
 
-- [zig](https://ziglang.org/) 0.8.0
-- [wlroots](https://github.com/swaywm/wlroots) 0.14.0
+- [zig](https://ziglang.org/) 0.10
+- [wlroots](https://gitlab.freedesktop.org/wlroots/wlroots) 0.16
 - [zig-wayland](https://github.com/ifreund/zig-wayland)
 - [zig-xkbcommon](https://github.com/ifreund/zig-xkbcommon)
 - [zig-pixman](https://github.com/ifreund/zig-pixman)
@@ -28,6 +28,6 @@ are not part of zig-wlroots and are released under the Zero Clause BSD license.
 
 ## TODO
 
-- [x] Bind enough to port [tinywl](https://github.com/swaywm/wlroots/tree/master/tinywl)
+- [x] Bind enough to port [tinywl](https://gitlab.freedesktop.org/wlroots/wlroots/-/tree/master/tinywl)
 - [x] Bind enough to port [river](https://github.com/riverwm/river)
 - [ ] Complete bindings

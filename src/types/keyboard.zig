@@ -14,8 +14,8 @@ pub const Keyboard = extern struct {
         pub const scroll_lock = 1 << 2;
     };
 
-    pub const ModifierMask = packed struct {
-        shift: bool align(@alignOf(u32)) = false,
+    pub const ModifierMask = packed struct(u32) {
+        shift: bool = false,
         caps: bool = false,
         ctrl: bool = false,
         alt: bool = false,
@@ -23,14 +23,7 @@ pub const Keyboard = extern struct {
         mod3: bool = false,
         logo: bool = false,
         mod5: bool = false,
-        // can't wait till stage2 fixes all the packed struct bugs
-        _: u16 = 0,
-        __: u8 = 0,
-
-        comptime {
-            std.debug.assert(@sizeOf(@This()) == @sizeOf(u32));
-            std.debug.assert(@alignOf(@This()) == @alignOf(u32));
-        }
+        _: u24 = 0,
     };
 
     pub const Modifiers = extern struct {
@@ -51,11 +44,14 @@ pub const Keyboard = extern struct {
 
     const Impl = opaque {};
 
+    base: wlr.InputDevice,
+
     impl: *const Impl,
     group: ?*wlr.KeyboardGroup,
 
     keymap_string: [*:0]u8,
     keymap_size: usize,
+    keymap_fd: c_int,
     keymap: ?*xkb.Keymap,
     xkb_state: ?*xkb.State,
     led_indexes: [3]xkb.LED_Index,
@@ -75,7 +71,6 @@ pub const Keyboard = extern struct {
         modifiers: wl.Signal(*Keyboard),
         keymap: wl.Signal(*Keyboard),
         repeat_info: wl.Signal(*Keyboard),
-        destroy: wl.Signal(*Keyboard),
     },
 
     data: usize,
@@ -95,5 +90,22 @@ pub const Keyboard = extern struct {
     extern fn wlr_keyboard_get_modifiers(keyboard: *Keyboard) u32;
     pub fn getModifiers(keyboard: *Keyboard) ModifierMask {
         return @bitCast(ModifierMask, wlr_keyboard_get_modifiers(keyboard));
+    }
+
+    extern fn wlr_keyboard_notify_modifiers(
+        keyboard: *Keyboard,
+        mods_depressed: u32,
+        mods_latched: u32,
+        mods_locked: u32,
+        group: u32,
+    ) void;
+    pub fn notifyModifiers(keyboard: *Keyboard, modifiers: Modifiers) void {
+        wlr_keyboard_notify_modifiers(
+            keyboard,
+            modifiers.depressed,
+            modifiers.latched,
+            modifiers.locked,
+            modifiers.group,
+        );
     }
 };
